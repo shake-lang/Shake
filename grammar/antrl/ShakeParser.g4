@@ -7,8 +7,8 @@ options {
 // MISC
 
 shakeIdentifier:
-	(identifier = IDENTIFIER)		# Identifier
-	| (identifier = IDENTIFIER2)	# Identifier2;
+	(identifier = IDENTIFIER)		
+	| (identifier = IDENTIFIER2)	;
 
 shakeModifier:
 	KEYWORD_PUBLIC
@@ -19,7 +19,9 @@ shakeModifier:
 	| KEYWORD_ABSTRACT
 	| KEYWORD_NATIVE
 	| KEYWORD_SYNCHRONIZED
-	| KEYWORD_INLINE;
+	| KEYWORD_INLINE
+	| KEYWORD_OVERRIDE
+	| KEYWORD_OPERATOR;
 
 shakeModifierList: shakeModifier*;
 
@@ -30,16 +32,16 @@ shakeNamespace: (identifier = shakeIdentifier)
 
 shakeType: (namespace = shakeNamespace) (shakeTypeArguments)?;
 
-genericDeclaration: (name = shakeIdentifier) (colon = COLON) (
+genericDeclaration: (name = shakeIdentifier) ((colon = COLON) (
 		type = shakeType
-	);
+	))?;
 
 genericsDeclaration: (lt = LT) (
 		genericDeclaration (COMMA genericDeclaration)*
 	) (gt = GT);
 
 funArgs: (lt = LPAREN) (
-		(args = funArgDeclaration (COMMA funArgDeclaration)*)
+		(args = funArgDeclaration (COMMA funArgDeclaration)*)?
 	) (gt = RPAREN);
 
 funArgDeclaration: (name = shakeIdentifier) (colon = COLON) (
@@ -52,15 +54,15 @@ shakeBlock: (lt = LCURLY) (shakeBlockChild)* (gt = RCURLY)
 shakeBlockChild: shakeStatement;
 
 shakeArgument:
-	shakeValue							# Argument
-	| shakeIdentifier ASSIGN shakeValue	# NamedArgument;
+	shakeValue							
+	| shakeIdentifier ASSIGN shakeValue	;
 
 shakeArguments:
 	LPAREN ((shakeArgument) (COMMA shakeArgument) COMMA?)* RPAREN;
 
 shakeTypeArgument: shakeType;
 shakeTypeArguments:
-	LT ((shakeTypeArgument) (COMMA shakeTypeArgument) COMMA?)*;
+	LT ((shakeTypeArgument) ((COMMA shakeTypeArgument) COMMA?)*)? GT;
 
 // Shake File
 shakeFile: shakeFileChild*;
@@ -69,10 +71,11 @@ shakeFileChild:
 	shakePackageDeclaration
 	| shakeImportDeclaration
 	| shakeFunDeclaration
-	| shakeFieldDeclaration;
+	| shakeFieldDeclaration
+	| shakeClassDeclaration;
 
-shakePackageDeclaration: KEYWORD_PACKAGE shakeNamespace;
-shakeImportDeclaration: KEYWORD_IMPORT shakeNamespace;
+shakePackageDeclaration: KEYWORD_PACKAGE (namespace=shakeNamespace);
+shakeImportDeclaration: KEYWORD_IMPORT (namespace=shakeNamespace);
 
 shakeFunDeclaration:
 	shakeModifierList (fun = KEYWORD_FUN) (
@@ -81,7 +84,7 @@ shakeFunDeclaration:
 		name = shakeIdentifier
 	) (args = funArgs) ((colon = COLON) (returnType = shakeType))? (
 		block = shakeBlock
-	);
+	)?;
 
 shakeFieldDeclaration:
 	shakeModifierList (var = KEYWORD_VAR | var = KEYWORD_VAL) (
@@ -89,6 +92,28 @@ shakeFieldDeclaration:
 	)? (name = shakeIdentifier) (
 		(colon = COLON) (variableType = shakeType)
 	)? ((assign = ASSIGN) (value = shakeValue))?;
+
+shakeConstructorDeclaration:
+	shakeModifierList (fun = KEYWORD_CONSTRUCTOR) (
+		identifier = shakeIdentifier
+	)? (args = funArgs) (block = shakeBlock)?;
+
+shakeClassChild:
+	shakeFieldDeclaration
+	| shakeFunDeclaration
+	| shakeConstructorDeclaration
+	| shakeClassDeclaration;
+
+shakeClassContents: LCURLY (shakeClassChild)* RCURLY;
+
+superClassList: shakeType (COMMA shakeType)*;
+
+shakeClassDeclaration:
+	shakeModifierList (class = KEYWORD_CLASS) (
+		name = shakeIdentifier
+	) (generics = genericsDeclaration)? (
+		COLON (superClasses = superClassList)
+	)? (contents = shakeClassContents)?;
 
 // Shake Statement
 shakeStatement: shakeVarDeclaration;
@@ -127,129 +152,106 @@ shakeIf:
 
 shakeValue: shakeAssignment;
 
-shakeAssignment:
-	shakeLogicalOr												# LogicalOr
-	| (left = shakeAssignment) ASSIGN (right = shakeLogicalOr)	# Assign
-	| (left = shakeAssignment) ADD_ASSIGN (
-		right = shakeLogicalOr
-	) # AddAssign
-	| (left = shakeAssignment) SUB_ASSIGN (
-		right = shakeLogicalOr
-	) # SubAssign
-	| (left = shakeAssignment) MUL_ASSIGN (
-		right = shakeLogicalOr
-	) # MulAssign
-	| (left = shakeAssignment) DIV_ASSIGN (
-		right = shakeLogicalOr
-	) # DivAssign
-	| (left = shakeAssignment) MOD_ASSIGN (
-		right = shakeLogicalOr
-	) # ModAssign
-	| (left = shakeAssignment) POW_ASSIGN (
-		right = shakeLogicalOr
-	) # PowAssign;
 
 // TODO Ternary
+shakeAssignment
+    : shakeLogicalOr (ASSIGN shakeAssignment)?
+    | shakeLogicalOr ADD_ASSIGN shakeAssignment
+    | shakeLogicalOr SUB_ASSIGN shakeAssignment
+    | shakeLogicalOr MUL_ASSIGN shakeAssignment
+    | shakeLogicalOr DIV_ASSIGN shakeAssignment
+    | shakeLogicalOr MOD_ASSIGN shakeAssignment
+    | shakeLogicalOr POW_ASSIGN shakeAssignment
+    ;
 
-shakeLogicalOr:
-	shakeLogicalXor													# LogicalXor
-	| (left = shakeLogicalOr) LOGIC_OR (right = shakeLogicalXor)	# LogicalOr;
+shakeLogicalOr
+    : shakeLogicalXor (LOGIC_OR shakeLogicalXor)*
+    ;
 
-shakeLogicalXor:
-	shakeLogicalAnd # LogicalAnd
-	| (left = shakeLogicalXor) LOGIC_XOR (
-		right = shakeLogicalAnd
-	) # LogicalXor;
+shakeLogicalXor
+    : shakeLogicalAnd (LOGIC_XOR shakeLogicalAnd)*
+    ;
 
-shakeLogicalAnd:
-	shakeBitwiseOr													# BitwiseOr
-	| (left = shakeLogicalAnd) LOGIC_AND (right = shakeBitwiseOr)	# LogicalAnd;
+shakeLogicalAnd
+    : shakeBitwiseOr (LOGIC_AND shakeBitwiseOr)*
+    ;
 
-shakeBitwiseOr:
-	shakeBitwiseXor												# BitwiseXor
-	| (left = shakeBitwiseOr) BIT_OR (right = shakeBitwiseXor)	# BitOr
-	| (left = shakeBitwiseOr) BIT_NOR (right = shakeBitwiseXor)	# BitNor;
+shakeBitwiseOr
+    : shakeBitwiseXor (BIT_OR shakeBitwiseXor | BIT_NOR shakeBitwiseXor)*
+    ;
 
-shakeBitwiseXor:
-	shakeBitwiseAnd													# BitwiseAnd
-	| (left = shakeBitwiseXor) BIT_XOR (right = shakeBitwiseAnd)	# BitXor
-	| (left = shakeBitwiseXor) BIT_XNOR (right = shakeBitwiseAnd)	# BitXnor;
+shakeBitwiseXor
+    : shakeBitwiseAnd (BIT_XOR shakeBitwiseAnd | BIT_XNOR shakeBitwiseAnd)*
+    ;
 
-shakeBitwiseAnd:
-	shakeEquality												# Equality
-	| (left = shakeBitwiseAnd) BIT_AND (right = shakeEquality)	# BitAnd
-	| (left = shakeBitwiseAnd) BIT_NAND (right = shakeEquality)	# BitNand;
+shakeBitwiseAnd
+    : shakeEquality (BIT_AND shakeEquality | BIT_NAND shakeEquality)*
+    ;
 
-shakeEquality:
-	shakeRelation											# Relation
-	| (left = shakeEquality) EQUALS (right = shakeRelation)	# Equal
-	| (left = shakeEquality) NEQ (right = shakeRelation)	# NotEqual;
+shakeEquality
+    : shakeRelation (EQUALS shakeRelation | NEQ shakeRelation)*
+    ;
 
-shakeRelation:
-	shakeShift											# Shift
-	| (left = shakeRelation) LT (right = shakeShift)	# LessThan
-	| (left = shakeRelation) GT (right = shakeShift)	# GreaterThan
-	| (left = shakeRelation) LTE (right = shakeShift)	# LessEqual
-	| (left = shakeRelation) GTE (right = shakeShift)	# GreaterEqual;
+shakeRelation
+    : shakeShift (LT shakeShift | GT shakeShift | LTE shakeShift | GTE shakeShift)*
+    ;
 
-shakeShift:
-	shakeAddition											# Addition
-	| (left = shakeShift) LT LT (right = shakeAddition)		# LeftShift
-	| (left = shakeShift) GT GT GT (right = shakeAddition)	# UnsignedRightShift
-	| (left = shakeShift) GT GT (right = shakeAddition)		# RightShift;
+shakeShift
+    : shakeAddition (LT LT shakeAddition | GT GT shakeAddition | GT GT GT shakeAddition)*
+    ;
 
-shakeAddition:
-	shakeMutiplication											# Mutiplication
-	| (left = shakeAddition) ADD (right = shakeMutiplication)	# Addition
-	| (left = shakeAddition) SUB (right = shakeMutiplication)	# Subtraction;
+shakeAddition
+    : shakeMultiplication (ADD shakeMultiplication | SUB shakeMultiplication)*
+    ;
 
-shakeMutiplication:
-	shakePower												# Power
-	| (left = shakeMutiplication) MOD (right = shakePower)	# Modulo
-	| (left = shakeMutiplication) DIV (right = shakePower)	# Division
-	| (left = shakeMutiplication) MUL (right = shakePower)	# Multiplication;
+shakeMultiplication
+    : shakePower (MUL shakePower | DIV shakePower | MOD shakePower)*
+    ;
 
-shakePower:
-	shakeCast											# Cast
-	| (left = shakePower) POW (right = shakeMandory)	# Power;
+shakePower
+    : shakeCast (POW shakeCast)*
+    ;
 
-shakeCast:
-	shakeAccess												# Access
-	| (target = shakeCast) KEYWORD_AS (type = shakeType)	# Cast;
+shakeCast
+    : shakeAccess (KEYWORD_AS shakeType)?
+    ;
 
-shakeAccess:
-	shakeMandory													# Mandory
-	| (left = shakeMandory) DOT (right = shakeAccess)				# PropertyAccess
-	| (element = shakeAccess) LBRACK (element = shakeValue) RBRACK	# Get
-	| (element = shakeAccess) (typeargs = shakeTypeArguments)? (
-		args = shakeArguments
-	) # Call;
+shakeAccess
+    : shakeMandory (DOT shakeAccess | LBRACK shakeValue RBRACK | shakeArguments (shakeTypeArguments)?)*
+    ;
 
-shakeMandory:
-	shakeSign						# Sign
-	| INCR (value = shakeMandory)	# IncrBefore
-	| (value = shakeMandory) INCR	# IncrAfter
-	| DECR (value = shakeMandory)	# DecrBefore
-	| (value = shakeMandory) DECR	# DecrAfter;
+shakeMandory
+    : shakeSign
+    | INCR shakeMandory
+    | shakeMandory INCR
+    | DECR shakeMandory
+    | shakeMandory DECR
+    ;
 
-shakeSign:
-	shakePriority
-	| (sign = SUB) (content = shakeSign)
-	| (sign = ADD) (content = shakeSign)
-	| (sign = LOGIC_NOT) (content = shakeSign)
-	| (sign = BIT_NOT) (content = shakeSign);
+shakeSign
+    : shakePriority
+    | SUB shakeSign
+    | ADD shakeSign
+    | LOGIC_NOT shakeSign
+    | BIT_NOT shakeSign
+    ;
 
-shakePriority: shakeLiteral | LPAREN shakeValue RPAREN;
+shakePriority
+    : shakeLiteral
+    | LPAREN shakeValue RPAREN
+    ;
 
-shakeLiteral: (literal = CHAR)		# CharLiteral
-	| (literal = STRING)			# StringLiteral
-	| (literal = INTEGER)			# IntegerLiteral
-	| (literal = FLOAT)				# FloatLiteral
-	| (literal = BIN_NUMBER)		# BinNumberLiteral
-	| (literal = HEX_NUMBER)		# HexNumberLiteral
-	| (literal = OCT_NUMBER)		# OctNumberLiteral
-	| (literal = shakeIdentifier)	# IdentifierLiteral
-	| (literal = KEYWORD_TRUE)		# TrueLiteral
-	| (literal = KEYWORD_FALSE)		# FalseLiteral
-	| (literal = KEYWORD_THIS)		# ThisLiteral
-	| (literal = KEYWORD_SUPER)		# SuperLiteral;
+
+shakeLiteral: (literal = CHAR)
+	| (literal = STRING)
+	| (literal = INTEGER)
+	| (literal = FLOAT)
+	| (literal = BIN_NUMBER)
+	| (literal = HEX_NUMBER)
+	| (literal = OCT_NUMBER)
+	| (literal = IDENTIFIER)
+	| (literal = IDENTIFIER2)
+	| (literal = KEYWORD_TRUE)
+	| (literal = KEYWORD_FALSE)
+	| (literal = KEYWORD_THIS)
+	| (literal = KEYWORD_SUPER)		;
