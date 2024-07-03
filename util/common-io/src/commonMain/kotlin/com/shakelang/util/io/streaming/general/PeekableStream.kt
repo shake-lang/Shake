@@ -1,8 +1,6 @@
 package com.shakelang.util.io.streaming.general
 
 interface PeekableStream<T> : Stream<T> {
-    val buffer: MutableList<T>
-    fun fillBuffer(amount: Int)
 
     /**
      * Peek at the next elements in the stream
@@ -10,7 +8,7 @@ interface PeekableStream<T> : Stream<T> {
      * @return The peeked elements
      * @since 0.6.0
      */
-    fun peek(index: Int): T
+    fun peek(amount: Int): T
 
     /**
      * Peek at the next element in the stream

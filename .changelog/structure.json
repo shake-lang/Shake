@@ -101,7 +101,7 @@
       "path": ":util:atomics",
       "name": "com.shakelang.util:atomics",
       "version": "0.0.0-SNAPSHOT",
-      "description": "Utility for working with colors in console applications (Kotlin Multiplatform)",
+      "description": "Utility library for atomic operations (automatically update values)",
       "author": "com.shakelang.util",
       "license": "",
       "dependencies": [
@@ -113,7 +113,7 @@
       "path": ":util:changelog",
       "name": "com.shakelang.util.changelog:changelog",
       "version": "0.7.9",
-      "description": "Changelog generation plugin for Shake",
+      "description": "Changelog / Versioning plugin for gradle",
       "author": "com.shakelang.util.changelog",
       "license": "",
       "dependencies": [
@@ -149,7 +149,7 @@
       "path": ":util:common-io",
       "name": "com.shakelang.util:common-io",
       "version": "0.6.1",
-      "description": "Utility for working with colors in console applications (Kotlin Multiplatform)",
+      "description": "Kotlin common io utilities (Streams, etc.)",
       "author": "com.shakelang.util",
       "license": "",
       "dependencies": [
@@ -170,7 +170,7 @@
       "path": ":util:environment",
       "name": "com.shakelang.util:environment",
       "version": "0.3.0",
-      "description": "Utility for working with colors in console applications (Kotlin Multiplatform)",
+      "description": "Utility for getting environment information in KMP",
       "author": "com.shakelang.util",
       "license": "",
       "dependencies": [
@@ -181,7 +181,7 @@
       "path": ":util:jvmlib",
       "name": "com.shakelang.util:jvmlib",
       "version": "0.2.5-SNAPSHOT",
-      "description": "A library for jvm stuff in java",
+      "description": "A library for working with JVM class-files and resources",
       "author": "com.shakelang.util",
       "license": "",
       "dependencies": [
@@ -247,7 +247,7 @@
       "path": ":util:primitives",
       "name": "com.shakelang.util:primitives",
       "version": "0.6.0",
-      "description": "Utility for working with colors in console applications (Kotlin Multiplatform)",
+      "description": "Utility library for primitive types in KMP (Access single bits, work with bytes, etc...)",
       "author": "com.shakelang.util",
       "license": "",
       "dependencies": [
@@ -296,7 +296,7 @@
       "path": ":util:testlib",
       "name": "com.shakelang.util:testlib",
       "version": "0.3.0",
-      "description": "Utilities for parsing stuff with kotlin",
+      "description": "Extension upon the Kotest testing framework to provide additional functionality.",
       "author": "com.shakelang.util",
       "license": "",
       "dependencies": [
@@ -329,7 +329,8 @@
         "unspecified:path-browserify:1.0.1",
         ":util:pointers:pointers:0.2.0",
         ":util:primitives:primitives:0.6.0",
-        ":util:common-io:common-io:0.6.1"
+        ":util:common-io:common-io:0.6.1",
+        ":shake:compiler:descriptor:descriptor:0.0.0-SNAPSHOT"
       ]
     },
     {
@@ -341,13 +342,14 @@
       "license": "",
       "dependencies": [
         "unspecified:path-browserify:1.0.1",
-        ":util:pointers:pointers:0.2.0",
-        ":util:primitives:primitives:0.6.0",
-        ":util:logger:logger:0.5.2",
-        ":util:common-io:common-io:0.6.1",
         ":shake:bytecode:conventions:conventions:0.1.0-SNAPSHOT",
         ":shake:bytecode:utils:utils:0.1.0-SNAPSHOT",
-        ":shake:compiler:processor:processor:0.1.0"
+        ":shake:compiler:processor:processor:0.1.0",
+        ":util:common-io:common-io:0.6.1",
+        ":util:logger:logger:0.5.2",
+        ":util:parseutils:parseutils:0.5.1",
+        ":util:pointers:pointers:0.2.0",
+        ":util:primitives:primitives:0.6.0"
       ]
     },
     {
@@ -362,6 +364,7 @@
         ":util:pointers:pointers:0.2.0",
         ":util:primitives:primitives:0.6.0",
         ":util:common-io:common-io:0.6.1",
+        ":shake:compiler:descriptor:descriptor:0.0.0-SNAPSHOT",
         ":shake:bytecode:conventions:conventions:0.1.0-SNAPSHOT"
       ]
     },
@@ -394,6 +397,20 @@
         ":util:primitives:primitives:0.6.0",
         ":util:common-io:common-io:0.6.1",
         ":shake:bytecode:conventions:conventions:0.1.0-SNAPSHOT"
+      ]
+    },
+    {
+      "path": ":shake:compiler:descriptor",
+      "name": "com.shakelang.shake.compiler.conventions:descriptor",
+      "version": "0.0.0-SNAPSHOT",
+      "description": "Compiler descriptor conventions",
+      "author": "com.shakelang.shake.compiler.conventions",
+      "license": "",
+      "dependencies": [
+        "unspecified:path-browserify:1.0.1",
+        ":util:pointers:pointers:0.2.0",
+        ":util:primitives:primitives:0.6.0",
+        ":util:common-io:common-io:0.6.1"
       ]
     },
     {
@@ -457,7 +474,8 @@
         ":util:primitives:primitives:0.6.0",
         ":util:logger:logger:0.5.2",
         ":shake:compiler:lexer:lexer:0.1.8-SNAPSHOT",
-        ":shake:compiler:parser:parser:0.1.10-SNAPSHOT"
+        ":shake:compiler:parser:parser:0.1.10-SNAPSHOT",
+        ":shake:compiler:descriptor:descriptor:0.0.0-SNAPSHOT"
       ]
     },
     {
@@ -468,7 +486,8 @@
       "author": "com.shakelang.shake.compiler",
       "license": "",
       "dependencies": [
-        "unspecified:path-browserify:1.0.1"
+        "unspecified:path-browserify:1.0.1",
+        ":util:embed:api:api:0.1.1"
       ]
     },
     {
@@ -516,7 +535,7 @@
       "path": ":util:embed:plugin",
       "name": "com.shakelang.util.embed:plugin",
       "version": "0.2.3",
-      "description": "Gradle plugin for embedding resources into kotlin source",
+      "description": "Gradle plugin for embedding resources into kotlin source (plugin)",
       "author": "com.shakelang.util.embed",
       "license": "",
       "dependencies": [
@@ -529,7 +548,7 @@
       "path": ":util:testlib:lexer",
       "name": "com.shakelang.util.testlib:lexer",
       "version": "0.1.2",
-      "description": "Utilities for parsing stuff with kotlin",
+      "description": "A library for testing lexer implementations",
       "author": "com.shakelang.util.testlib",
       "license": "",
       "dependencies": [
@@ -553,5 +572,5 @@
       ]
     }
   ],
-  "lastUpdate": 1715267343088
+  "lastUpdate": 1720001371879
 }

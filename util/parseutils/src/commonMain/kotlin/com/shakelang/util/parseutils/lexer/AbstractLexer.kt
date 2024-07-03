@@ -13,8 +13,6 @@ import com.shakelang.util.parseutils.lexer.token.stream.TokenInputStream
  * @param T The type of the token
  * @param ST The type of the token stream
  * @param CTX The type of the token context
- * @since 0.5.0
- * @version 0.5.0
  */
 @Suppress("unused")
 abstract class AbstractLexer<
@@ -26,33 +24,38 @@ abstract class AbstractLexer<
 
     /**
      * The input stream
-     * @since 0.5.0
-     * @version 0.5.0
      */
     val input: CharacterInputStream,
 
     /**
      * The token context
-     * @since 0.5.0
-     * @version 0.5.0
      */
     val ctx: CTX,
+
+    /**
+     * The state of the lexer
+     */
+    private var state: Int = 0,
 ) {
 
     /**
      * The token creation factory
-     * @since 0.5.0
-     * @version 0.5.0
      */
-    val factory = TokenCreationFactory(input.positionMaker, this::tokenFactory, ctx)
+    val factory = TokenCreationFactory(input.positionMaker, ::tokenFactory, ctx)
 
+    /**
+     * Create a factory for the lexer
+     */
     private fun toFactory() = TokenFactory.of(this::makeToken)
+
+    /**
+     * Stores weather the stream was already created
+     * (We don't want to create multiple token streams)
+     */
     private var streamCreated = false
 
     /**
      * Create a token stream
-     * @since 0.5.0
-     * @version 0.5.0
      */
     fun stream(): ST {
         if (streamCreated) throw IllegalStateException("Stream already created for this lexer")
@@ -64,29 +67,21 @@ abstract class AbstractLexer<
 
     /**
      * Create a token stream
-     * @since 0.5.0
-     * @version 0.5.0
      */
     protected abstract fun createStream(factory: TokenFactory<T>): ST
 
     /**
      * Factory method for creating tokens
-     * @since 0.5.0
-     * @version 0.5.0
      */
     abstract fun makeToken(): T
 
     /**
      * Factory method for creating tokens
-     * @since 0.5.0
-     * @version 0.5.0
      */
     abstract fun tokenFactory(ctx: TokenCreationContext<TT, T, ST, CTX>): T
 
     /**
      * The error factory for the lexer
-     * @since 0.5.0
-     * @version 0.5.0
      */
     open val errorFactory = LexerErrorFactory(
         { message, start, end ->
@@ -97,8 +92,6 @@ abstract class AbstractLexer<
 
     /**
      * A [CompilerError] thrown by the lexer
-     * @since 0.1.0
-     * @version 0.3.0
      */
     class LexerError(
         message: String,

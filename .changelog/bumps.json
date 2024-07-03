@@ -1,3 +1,32 @@
 {
-  "bumps": []
+  "bumps": [
+    {
+      "type": "patch",
+      "message": "Documentation fixes",
+      "paths": [
+        ":util:common-io"
+      ]
+    },
+    {
+      "type": "patch",
+      "message": "Implement channel feature into token",
+      "paths": [
+        ":util:parseutils"
+      ]
+    },
+    {
+      "type": "patch",
+      "message": "Add lexer state (to support multi-state lexical parsing)",
+      "paths": [
+        ":util:parseutils"
+      ]
+    },
+    {
+      "type": "patch",
+      "message": "Improve documentation",
+      "paths": [
+        ":util:parseutils"
+      ]
+    }
+  ]
 }

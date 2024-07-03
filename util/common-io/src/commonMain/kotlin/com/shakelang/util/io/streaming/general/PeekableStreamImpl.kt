@@ -11,9 +11,9 @@ open class PeekableStreamImpl<T>(
     private val stream: Stream<T>,
 ) : PeekableStream<T> {
 
-    override val buffer = mutableListOf<T>()
+    private val buffer = mutableListOf<T>()
 
-    override fun fillBuffer(amount: Int) {
+    private fun fillBuffer(amount: Int) {
         for (i in 0 until amount) {
             if (!stream.hasNext()) break
             buffer.add(stream.read())
@@ -80,9 +80,7 @@ open class PeekableStreamImpl<T>(
      * @return If the stream has a next element
      * @since 0.6.0
      */
-    override fun hasNext(): Boolean {
-        return buffer.isNotEmpty() || stream.hasNext()
-    }
+    override fun hasNext(): Boolean = buffer.isNotEmpty() || stream.hasNext()
 
     /**
      * Check if the stream has a specified amount of elements
